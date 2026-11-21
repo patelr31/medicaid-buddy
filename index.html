@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medicaid Renewal Buddy</title>
+<meta name="description" content="A plain-language helper for New York Medicaid members: do the 2027 work requirements apply to you, are you exempt, what to have ready, and when you renew. Every rule links to its official source.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">New York Medicaid · 2027 changes</p>
+  <h1>Medicaid Renewal Buddy</h1>
+  <p class="lede">Answer a few questions to see whether the new work requirement applies to you, whether you qualify for an exception, what to have ready, and when you'll need to renew.</p>
+  <p class="edu"><b>Educational tool, not legal advice.</b> NY State of Health makes the decision. Every rule here links to its official source. Last checked November 21, 2026. Nothing you enter is saved or sent.</p>
+</header>
+
+<main class="wrap grid">
+  <section class="card steps">
+    <fieldset>
+      <legend>1. How old are you?</legend>
+      <label class="opt"><input type="radio" name="age" value="under19"><span>18 or younger</span></label>
+      <label class="opt"><input type="radio" name="age" value="19-64"><span>19 to 64</span></label>
+      <label class="opt"><input type="radio" name="age" value="65plus"><span>65 or older</span></label>
+    </fieldset>
+
+    <div id="who-block" hidden>
+      <fieldset>
+        <legend>2. Which county do you live in?</legend>
+        <select id="county" aria-label="County">
+          <option value="">Choose…</option><option>Bronx</option><option>Brooklyn (Kings)</option><option>Manhattan (New York)</option><option>Queens</option><option>Staten Island (Richmond)</option><option>Another New York county</option>
+        </select>
+      </fieldset>
+      <fieldset>
+        <legend>3. Do any of these apply to you? <span class="hint">Tick all that apply.</span></legend>
+        <div id="ex-list"></div>
+      </fieldset>
+      <fieldset>
+        <legend>4. In the months you're asked about, did either of these happen?</legend>
+        <div id="tmp-list"></div>
+      </fieldset>
+    </div>
+
+    <div id="hours-block" hidden>
+      <fieldset>
+        <legend>5. In a typical month…</legend>
+        <label class="field">Income before taxes (wages, gig work, tips, self-employment, Social Security, SSDI, pension, unemployment) <span class="hint">Not SSI, child support, gifts, loans, VA disability or workers' comp.</span>
+          <span class="money">$<input id="income" inputmode="decimal" placeholder="0"></span></label>
+        <div class="row3">
+          <label class="field">Hours of work <span class="hint">paid or unpaid</span><input id="h-work" inputmode="numeric" placeholder="0"></label>
+          <label class="field">Hours of job training <span class="hint">approved program</span><input id="h-training" inputmode="numeric" placeholder="0"></label>
+          <label class="field">Hours volunteering <span class="hint">with an organized group</span><input id="h-volunteer" inputmode="numeric" placeholder="0"></label>
+        </div>
+        <label class="opt"><input type="checkbox" id="halftime"><span>I go to school at least half-time (college, CTE, high school or GED)</span></label>
+        <label class="field">Or, if less than half-time, credit hours this term <input id="credits" inputmode="numeric" placeholder="0" class="short"></label>
+      </fieldset>
+    </div>
+
+    <fieldset>
+      <legend>6. When is your next renewal?</legend>
+      <input type="date" id="renewal" aria-label="Next renewal date">
+    </fieldset>
+    <div class="row no-print"><button id="print" class="ghost">Print my summary</button><button id="reset" class="ghost">Start over</button></div>
+  </section>
+
+  <aside class="side">
+    <section id="result" class="result unknown" aria-live="polite"></section>
+    <section class="card"><h2>What to have ready</h2><ul id="docs" class="tight"></ul></section>
+    <section class="card"><h2>Your renewal dates</h2><div id="dates"></div><button id="ics" class="small" hidden>Add reminders to my calendar</button></section>
+    <section class="card help"><h2>Free help</h2>
+      <p>NY State of Health: <b id="phone"></b> (TTY <span id="tty"></span>), Monday–Friday 8am–8pm, Saturday 9am–1pm.</p>
+      <p><a href="https://info.nystateofhealth.ny.gov/findassistor" target="_blank" rel="noopener">Find a free enrollment assistor near you</a>. If you enrolled through your county's Department of Social Services, contact that office.</p>
+    </section>
+  </aside>
+</main>
+
+<section class="wrap card sources no-print">
+  <h2>Official sources</h2>
+  <ul id="sources" class="tight"></ul>
+  <p class="hint">Other changes in 2027 you may hear about: Medicaid will cover fewer past medical bills (1 month back for most adults 19–64, instead of 3), so apply as soon as you think you qualify. Some immigrant groups moved from Medicaid to the Essential Plan in October 2026.</p>
+</section>
+<footer class="wrap">Built by a former Health Home care coordinator as a prototype. Not affiliated with New York State.</footer>
+<script src="rules.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
