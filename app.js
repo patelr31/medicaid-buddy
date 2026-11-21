@@ -4,11 +4,17 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const src = (k) => `<a class="src" href="${SOURCES[k].url}" target="_blank" rel="noopener" title="${esc(SOURCES[k].name)}">source</a>`;
-const num = (id) => Math.max(0, parseFloat($(id).value) || 0);
+// accept "$1,200", "1 200" and the like: drop currency signs, commas and spaces before parsing
+const num = (id) => Math.max(0, parseFloat($(id).value.replace(/[$,\s]/g, "")) || 0);
 const fmtDate = (d) => d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 const iso = (d) => d.toISOString().slice(0, 10);
 
-function addMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+// Same day n months later, clamped to the month's last day (Aug 31 + 6 -> Feb 29, not Mar 2)
+function addMonths(d, n) {
+  const x = new Date(d); x.setDate(1); x.setMonth(x.getMonth() + n);
+  const last = new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate();
+  x.setDate(Math.min(d.getDate(), last)); return x;
+}
 
 function answers() {
   return {
@@ -90,8 +96,8 @@ function renewals(a) {
   const renewDate = a.renewal;
   // first new coverage period after this renewal
   let step = yearly || iso(renewDate) < NUMBERS.sixMonthFromRenew ? 12 : 6;
-  let next = addMonths(renewDate, step);
-  for (let i = 0; i < 3; i++) { dates.push(next); next = addMonths(next, yearly ? 12 : 6); }
+  // count every date from the renewal itself so a clamped month-end doesn't drift (Aug 31 -> Feb 29 -> Aug 31)
+  for (let i = 0; i < 3; i++) dates.push(addMonths(renewDate, step + i * (yearly ? 12 : 6)));
   return { yearly, dates, firstStep: step };
 }
 
@@ -106,7 +112,9 @@ function ics(dates) {
         `SUMMARY:${title}`, `DESCRIPTION:Log in at nystateofhealth.ny.gov or call ${NUMBERS.phone}. Free help: info.nystateofhealth.ny.gov/findassistor`, "END:VEVENT"].join("\r\n"));
     }
   });
-  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Medicaid Renewal Buddy//EN", ...ev, "END:VCALENDAR"].join("\r\n");
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Medicaid Renewal Buddy//EN", ...ev, "END:VCALENDAR"].join("\r\n").split("\r\n");
+  // RFC 5545: fold lines longer than 75 octets (content is ASCII) and end every line with CRLF
+  return lines.map((l) => { let out = l.slice(0, 75); for (let i = 75; i < l.length; i += 74) out += "\r\n " + l.slice(i, i + 74); return out; }).join("\r\n") + "\r\n";
 }
 
 function render() {
@@ -149,6 +157,8 @@ function init() {
   document.body.addEventListener("change", render);
   $("#print").onclick = () => window.print();
   $("#reset").onclick = () => { $$("input").forEach((i) => (i.type === "checkbox" || i.type === "radio" ? (i.checked = false) : (i.value = ""))); $("#county").value = ""; render(); };
+  // browsers can restore typed answers on back/forward navigation after scripts run; re-render then
+  window.addEventListener("pageshow", render);
   render();
 }
 
